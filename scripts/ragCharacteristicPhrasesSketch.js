@@ -91,7 +91,16 @@ var octave0 = "qwertyuiop";
 var octave1 = "asdfghjkl;";
 var octave2 = "zxcvbnm,./";
 
-// const model = tf.loadLayersModel('../models/ftanet_model/model.json');
+// Stuff for pitch extraction
+var trackSF;
+var audioArray;
+var pitchTrack;
+let newSampleRate = 8000;
+let resampledArray = [];
+
+// const MODEL_URL = '../models/ftanet_model/model.json'
+//const model = tf.loadLayersModel('../models/ftanet_model/model.json');
+// const model = loadGraphModel(MODEL_URL);
 
 function preload() {
   recordingsList = loadJSON("../files/ragFollowing-pitchLine-recordingsList.json");
@@ -203,23 +212,62 @@ function setup () {
 //    .attribute("disabled", "true")
 //    .parent("sketch-holder");
 //}
-function handleAudioFile(file) {
+async function handleAudioFile(file) {
+  // ungrey buttons
   buttonPitch.removeAttribute('disabled');
   buttonTonic.removeAttribute('disabled');
   buttonRaga.removeAttribute('disabled');
+
+  // get file data
+  fileData = file.data
+
+  // load sound to array 
+  trackSF = await loadSound(fileData, soundLoaded, failedLoad);
+  audioArray = await trackSF.getPeaks();
+}
+
+function resampleAudioArray(audioArray, newSampleRate) {
+  let ratio = audioArray.length / (newSampleRate * audioArray.length / 44100);
+  let resampled = [];
+  for (let i = 0; i < newSampleRate * audioArray.length / 44100; i++) {
+    let index = Math.floor(i * ratio);
+    resampled.push(audioArray[index]);
+  }
+  return resampled;
+}
+
+function preProcessAudio(audio) {
+  resampledArray = resampleAudioArray(audio, newSampleRate);
+  return resampledArray
+}
+
+function predictFTANET(audioProcessed) {
+  return audioProcessed
+}
+
+function postProcessAudio(prediction) {
+  return prediction
 }
 
 function extractPitchTrack () {
   buttonPitch.attribute('disabled', 'true');
+
+  audioProcessed = preProcessAudio(audioArray);
+  prediction = predictFTANET(audioProcessed);
+  pitchTrack = postProcessAudio(audioProcessed);
+  buttonPitch.html('Pitch Track Extracted');
 }
 
 function identifyTonic () {
   buttonTonic.attribute('disabled', 'true');
-  
+  // code goes here
+  buttonTonic.html('Tonic Identified');
 }
 
 function identifyRaga () {
   buttonRaga.attribute('disabled', 'true');
+
+  buttonRaga.html('Raga Identified');
 }
 
 function draw () {
@@ -786,12 +834,7 @@ function player () {
 }
 
 function soundLoaded () {
-  buttonPlay.html(lang_start);
-  buttonPlay.removeAttribute("disabled");
-  selectMenu.removeAttribute("disabled");
   loaded = true;
-  var endLoading = millis();
-  print("Track loaded in " + (endLoading-initLoading)/1000 + " seconds");
 }
 
 function failedLoad () {
