@@ -91,7 +91,7 @@ var octave0 = "qwertyuiop";
 var octave1 = "asdfghjkl;";
 var octave2 = "zxcvbnm,./";
 
-const model = await tf.loadLayersModel('../models/ftanet/model.json');
+// const model = tf.loadLayersModel('../models/ftanet_model/model.json');
 
 function preload() {
   recordingsList = loadJSON("../files/ragFollowing-pitchLine-recordingsList.json");
@@ -166,24 +166,30 @@ function setup () {
 //  for (var i = 0; i < recordingsList.length; i++) {
 //    selectMenu.option(recordingsList[i].selectOption, i);
 //  }
-  
-  buttonPlay = createButton('Extract Pitch Track')
-    .size(120, 25)
-    .position(width - 120 - 10, 10)
+  buttonWidth = 150
+  buttonSep = 10
+
+  audioInput = createFileInput(handleAudioFile).parent("sketch-holder");
+  audioInput.position(buttonSep, 10)
+  audioInput.size(width-3*(buttonSep+buttonWidth) - 2*buttonSep, 25)
+
+  buttonPitch = createButton('Extract Pitch Track')
+    .size(buttonWidth, 25)
+    .position(width - 3*(buttonWidth+buttonSep), 10)
     .mouseClicked(extractPitchTrack)
     .attribute("disabled", "true")
     .parent("sketch-holder");
   
-  buttonPlay = createButton('Identify Tonic')
-    .size(120, 25)
-    .position(width - 120 - 10, 10)
+  buttonTonic = createButton('Identify Tonic')
+    .size(buttonWidth, 25)
+    .position(width - 2*(buttonWidth + buttonSep), 10)
     .mouseClicked(identifyTonic)
     .attribute("disabled", "true")
     .parent("sketch-holder");
 
-  buttonPlay = createButton('Identify Raga')
-    .size(120, 25)
-    .position(width - 120 - 10, 10)
+  buttonRaga = createButton('Identify Raga')
+    .size(buttonWidth, 25)
+    .position(width - (buttonWidth + buttonSep), 10)
     .mouseClicked(identifyRaga)
     .attribute("disabled", "true")
     .parent("sketch-holder");
@@ -197,20 +203,29 @@ function setup () {
 //    .attribute("disabled", "true")
 //    .parent("sketch-holder");
 //}
-
-function extractPitchTrack() {
-
+function handleAudioFile(file) {
+  buttonPitch.removeAttribute('disabled');
+  buttonTonic.removeAttribute('disabled');
+  buttonRaga.removeAttribute('disabled');
 }
-function identifyTonic() {
+
+function extractPitchTrack () {
+  buttonPitch.attribute('disabled', 'true');
+}
+
+function identifyTonic () {
+  buttonTonic.attribute('disabled', 'true');
   
 }
-function identifyRaga() {
-  
+
+function identifyRaga () {
+  buttonRaga.attribute('disabled', 'true');
 }
+
 function draw () {
   fill(backColor);
   noStroke();
-  rect(0, extraSpaceH, width, height); f
+  rect(0, extraSpaceH, width, height);
 
   textAlign(LEFT, BOTTOM);
   textStyle(NORMAL);
@@ -332,7 +347,7 @@ function start () {
   soundList = {};
   phrasesList = [];
 
-  var currentRecording = recordingsInfo[recordingsList[selectMenu.value()].mbid];
+  var currentRecording = recordingsInfo['bfefde58-4eb2-49b0-9c63-7e4ce1070e61'];
   trackFile = currentRecording.info.trackFile;
   var rag = ragInfo[currentRecording.rag.rag];
   var sa = currentRecording.rag.sa;
